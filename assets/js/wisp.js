@@ -116,6 +116,31 @@
     },
     { id: "Terbium 4", name: "Terbium 4", url: "wss://webmath.help/wisp/" },
 
+    // User-provided research candidates; they were not live-probed here. The
+    // strict Wisp v1 handshake check below prevents unrelated WebSockets from
+    // being treated as usable routes.
+    {
+      id: "Wisp Network",
+      name: "Wisp Network (Eaglercraft)",
+      url: "wss://play.wispnetwork.org/",
+    },
+    { id: "WebMC", name: "WebMC", url: "wss://wisp.webmc.fun/" },
+    {
+      id: "Crllect Proxy",
+      name: "Crllect Proxy",
+      url: "wss://proxy.crllect.dev/wisp/",
+    },
+    {
+      id: "Crllect Backend",
+      name: "Crllect Backend",
+      url: "wss://backend.crllect.dev/wisp/",
+    },
+    {
+      id: "Val Town",
+      name: "Val Town (pycoder42)",
+      url: "wss://pycoder42--5d21a10c4c0811f1a553ee650bb23af1.web.val.run/",
+    },
+
     { id: "Radius 1", name: "Radius 1", url: "wss://radiusproxy.app/wisp/" },
     {
       id: "Radius 1 (Adblock)",
@@ -359,10 +384,35 @@
   }
 
   /**
-   * Check that a server really speaks wisp. libcurl only considers its tunnel open
-   * once the server sends the first packet, so "the WebSocket opened" is not enough
-   * — an endpoint that accepts the upgrade and then sits there still produces curl
-   * error 7 later on.
+   * The browser client opens the socket without a subprotocol, so Wisp servers
+   * must use the v1 handshake: CONTINUE (0x03), stream 0, and a uint32 buffer
+   * count. Treating any WebSocket message as success lets unrelated JSON sockets
+   * masquerade as Wisp routes.
+   */
+  function isWispV1ContinueFrame(data) {
+    let bytes;
+    try {
+      if (!data || typeof data !== "object" || typeof data.byteLength !== "number") return false;
+      bytes = data.buffer
+        ? new Uint8Array(data.buffer, data.byteOffset || 0, data.byteLength)
+        : new Uint8Array(data);
+    } catch (error) {
+      return false;
+    }
+
+    return (
+      bytes.byteLength >= 9 &&
+      bytes[0] === 0x03 &&
+      bytes[1] === 0 &&
+      bytes[2] === 0 &&
+      bytes[3] === 0 &&
+      bytes[4] === 0
+    );
+  }
+
+  /**
+   * Check that a server really speaks Wisp v1. A WebSocket open is not enough;
+   * the initial CONTINUE frame must be valid or curl error 7 will follow later.
    *
    * Always resolves; never throws, so it is safe to race a whole pool of servers.
    *
@@ -433,10 +483,16 @@
       try {
         socket.binaryType = "arraybuffer";
       } catch (error) {
-        /* older browsers only support "blob"; either is fine here */
+        /* Blob frames cannot be checked synchronously; modern browsers use ArrayBuffer. */
       }
 
-      socket.onmessage = () => finish({ ok: true });
+      socket.onmessage = (event) => {
+        if (!isWispV1ContinueFrame(event && event.data)) {
+          finish({ ok: false, reason: "invalid-handshake" });
+          return;
+        }
+        finish({ ok: true });
+      };
       socket.onerror = () => finish({ ok: false, reason: "socket-error" });
       socket.onclose = (event) =>
         finish({

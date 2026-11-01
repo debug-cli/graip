@@ -196,9 +196,9 @@ search engine.
   crash, and are forgotten when the window closes.
 - **Omnibox shortcuts** — `Ctrl/⌘+L` focus the address bar, `Ctrl/⌘+T` new tab, `Ctrl/⌘+W` close,
   `Ctrl/⌘+Shift+T` reopen, `Alt+←/→` history. Search bangs: `!g`, `!ddg`, `!b`, `!yt`, `!w`, `!gh`, `!r`.
-- **Wisp management built in** — 30+ known endpoints, a real handshake probe (not just "the socket
-  opened"), automatic failover, and a picker that still shows *your* choice while a fallback is live
-  (`Anura 1 → Phantom`).
+- **Wisp management built in** — 35+ selectable endpoint candidates, a strict Wisp v1 handshake check
+  (not just "the socket opened"), automatic failover, and a picker that still shows *your* choice
+  while a fallback is live (`Anura 1 → Phantom`).
 - **Honest error pages** — TLS failures (curl 35/60), unreachable routes (curl 7) and missing WASM
   are classified, retried on another route a bounded number of times, and explained. Certificate
   verification is never disabled to "fix" a site.
@@ -461,7 +461,13 @@ Guidelines, architecture notes and known traps are in [`AGENTS.md`](./AGENTS.md)
 
 - **Version surfaces:** update the Settings Updates panel, footer and app update stamp to `v2.1.0 "juice"`.
 - **Support logs:** include `appVersion` in JSON exports and a Graip version line in text exports, while keeping the debug-log schema version separate.
-- **Offline shell:** advance the cache to `graip-shell-v8` so the updated shell replaces the prior cached release.
+- **Offline shell:** advance the cache to `graip-shell-v9` so the updated shell replaces the prior cached release.
+- **Wisp routes:** add Wisp Network, WebMC, Crllect Proxy, Crllect Backend, and Val Town as
+  selectable community candidates from the supplied research; validate the Wisp v1 `CONTINUE` frame
+  on stream 0 instead of accepting any WebSocket message. Exclude the source's C2-associated Lunaron
+  entry, placeholders and unrelated OpenWISP telemetry paths; candidates are not independently
+  live-verified here.
+- **Research archive:** preserve the supplied technical data in [`docs/research/public-wisp-servers-technical-data.md`](docs/research/public-wisp-servers-technical-data.md), with its limitations documented in `AGENTS.md`.
 - **Dated releases:** add introduction dates for v2.0.0 and v2.1.0, document complete release notes and version-prefixed PR titles in `AGENTS.md`.
 
 ### v2.0.0 "juice" — introduced 2026-10-26

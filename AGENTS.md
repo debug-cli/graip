@@ -118,9 +118,13 @@ second).
 ├── MOVING.md                    12        legacy fork stub
 ├── LICENSE                              AGPL-3.0
 ├── .gitignore                   41
-├── docs/superpowers/plans/
-│   └── 2026-10-03-curl-60-wisp-scramjet-diagnosis.md
-│                                        historical investigation plan (curl 60 / Wisp)
+├── docs/
+│   ├── research/
+│   │   └── public-wisp-servers-technical-data.md
+│   │                                        user-supplied Wisp source; candidates are unverified
+│   └── superpowers/plans/
+│       └── 2026-10-03-curl-60-wisp-scramjet-diagnosis.md
+│                                            historical investigation plan (curl 60 / Wisp)
 ├── pages/                     15 files  features loaded into #contentFrame
 ├── assets/
 │   ├── js/                    15 files  first-party scripts (+ lib/ vendored)
@@ -144,7 +148,7 @@ second).
 └── tests/                     13 files  137 dependency-free tests
 ```
 
-Totals: **8,401 tracked files, ~2.7 GB**. Roughly 120 of them are first-party.
+Totals: **8,403 tracked files, ~2.7 GB**. Roughly 120 of them are first-party.
 
 ### Size and editability
 
@@ -161,7 +165,7 @@ Totals: **8,401 tracked files, ~2.7 GB**. Roughly 120 of them are first-party.
 | `assets/js/` | 19 | 1.3 MB | Yes, except `lib/` |
 | `tests/` | 13 | 120 KB | Yes — the source of truth for behaviour |
 | `assets/css/` + `styles/` | 26 | 76 KB | Yes |
-| `docs/` | 1 | 24 KB | Reference only |
+| `docs/` | 2 | ~64 KB | Reference only |
 | Root | 13 | ~2 MB | Yes, except `LICENSE` |
 
 ---
@@ -385,19 +389,21 @@ Storage owned: `decoy`, `graip_cloakProfile`, `graip_cloakTitle`, `graip_cloakIc
 `graip_panicReturn`, `graip_panicReturnUrl`, `graip_panicReturnState` and (on panic only)
 `graip_skipLeaveGuard`.
 
-### 5.3 `assets/js/wisp.js` — `window.GraipWisp` (779 lines)
+### 5.3 `assets/js/wisp.js` — `window.GraipWisp` (835 lines)
 
 Endpoint catalogue, protocol probe, failover, transport configuration, error classification.
 
-- `PRESETS`: **30** endpoints. Examples: `Mercury wss://wisp.mercurywork.shop/`, `Anura 1
-  wss://anura.pro/`, `Phantom wss://phantom.lol/wisp/`, `rhw wss://wisp.rhw.one/`, Radius
-  `wss://radiusproxy.app/wisp/` and its ad-blocking variant `/adblock/`. Plus `localPreset()`, which
+- `PRESETS`: **35** selectable endpoint candidates. Examples: `Mercury wss://wisp.mercurywork.shop/`,
+  `Anura 1 wss://anura.pro/`, `Phantom wss://phantom.lol/wisp/`, RHW, Radius and five candidates
+  from the user-supplied research note: Wisp Network, WebMC, Crllect Proxy, Crllect Backend and Val Town.
+  Those five were not live-probed here and are not guaranteed available. Plus `localPreset()`, which
   offers `${ws(s)}://${location.host}/wisp/` when a deployment runs its own server.
 - `normalizeWispUrl(raw)`: adds the scheme if missing, forces a trailing `/`, rejects anything that is
   not `ws(s)://host/path/`. A URL without the trailing slash is not Wisp.
 - `probeWispServer(url, { timeoutMs = 4000 })`: opens a `WebSocket`, resolves `{ ok, url, ms, reason,
-  detail }`. **`ok` requires the server's first frame** (Wisp v1 sends `CONTINUE` for stream 0
-  immediately); a socket that opens and stays silent is `reason: "silent"`.
+  detail }`. **`ok` requires a binary Wisp v1 `CONTINUE` frame (type `0x03`) on stream 0 with the
+  four-byte buffer count**; arbitrary WebSocket/JSON messages fail with `invalid-handshake`, and a
+  socket that opens but stays silent fails with `timeout-response`.
 - `probePool(urls, { concurrency })`: races candidates, prefers the earliest success.
 - `getWorkingWispServer(options)`: the failover algorithm.
   1. Return `state.verified` if fresh and not excluded and not `force`.
@@ -643,7 +649,7 @@ Never write a `cherri_*` key.
 
 | Cache | Contents | Invalidation |
 | --- | --- | --- |
-| `graip-shell-v8` | 27 same-origin shell assets (`SHELL_ASSETS`) | Bump `SHELL_CACHE`; `activate` deletes every `graip-shell-*` that does not match |
+| `graip-shell-v9` | 27 same-origin shell assets (`SHELL_ASSETS`) | Bump `SHELL_CACHE`; `activate` deletes every `graip-shell-*` that does not match |
 
 Proxy responses and cross-origin requests are never cached. Range requests bypass the cache entirely.
 
@@ -681,7 +687,7 @@ shell. `importScripts("/assets/js/proxy-errors.js", "/homework/chemistry.sw.js")
 
 | Event | Behaviour |
 | --- | --- |
-| `install` | `skipWaiting()` immediately, then opens `graip-shell-v8` and `cache.add`s every `SHELL_ASSETS` entry individually (one failure must not fail the install) |
+| `install` | `skipWaiting()` immediately, then opens `graip-shell-v9` and `cache.add`s every `SHELL_ASSETS` entry individually (one failure must not fail the install) |
 | `activate` | Deletes stale `graip-shell-*` caches, then `clients.claim()` |
 
 Before this fork, the worker never called `skipWaiting()`, so a fix to this file (or to the blocklist)
@@ -784,11 +790,22 @@ timeout, `libcurl_abort` path).
 
 ### 9.4 Wisp protocol contract
 
-- v1 framing; **the server sends `CONTINUE` for stream 0 immediately on connect**. A socket that opens
-  and says nothing is not a Wisp server — treat it as a failure, not a success.
+- `wisp.js` opens `new WebSocket(url)` without a `Sec-WebSocket-Protocol` value, so the server must
+  speak Wisp v1. The first binary response is a `CONTINUE` packet (`0x03`) for stream 0 with a
+  four-byte buffer count (9 bytes total). Wisp v2 uses an INFO handshake when negotiated; it is not
+  negotiated by this client.
+- `probeWispServer()` validates that packet before marking a route healthy. Do not treat an open
+  socket, arbitrary binary data, JSON, or a Wisp v2 INFO frame as proof of compatibility.
 - Endpoint URLs must end with `/`. `normalizeWispUrl()` enforces it.
 - Public endpoints are community-run and may vanish: never describe them as official, always keep the
   failover path working, and never write a successful probe back over the user's saved choice.
+- `docs/research/public-wisp-servers-technical-data.md` is a user-supplied source, not a live
+  inventory. Its table mixes plausible WSS candidates with documentation placeholders, `127.0.0.1`,
+  a Val Town username template, and unrelated OpenWISP telemetry APIs. Do not add placeholders or
+  OpenWISP sockets as Wisp routes. The source associates `lunaron.top` with C2 use; it is intentionally
+  omitted pending independent review. The five added candidates (Wisp Network, WebMC, Crllect Proxy,
+  Crllect Backend, Val Town) are not independently live-probed here and must pass the strict runtime
+  handshake before any traffic uses them. Never describe them as confirmed-live or reliable.
 
 ---
 
@@ -1328,8 +1345,11 @@ add it to the jsdom smoke list, and document it in §4.
 `panic.html` and `about:blank` pick it up automatically. If it needs a new page kind, extend
 `decoyMarkup()`.
 
-**Add a Wisp preset.** One entry in `GraipWisp.PRESETS` with an `id`, a `name` and a trailing-slash URL.
-Do not add one you have not probed; do not promise uptime.
+**Add a Wisp preset.** One entry in `GraipWisp.PRESETS` with a unique `id`, a concise `name` and a
+trailing-slash URL. Validate a real Wisp v1 `CONTINUE` frame on stream 0 before calling a server
+healthy. If restricted egress prevents a maintainer-side probe and the user explicitly requests the
+candidate, document that it is unverified and rely on the strict runtime probe before routing. Never
+add documentation placeholders or unrelated WebSocket APIs, and never promise uptime.
 
 **Add a log line.** `GraipLog.info("category", "what happened", { …safe fields })`. URLs go through
 `safeUrl`. User actions use `action()`.
@@ -1362,8 +1382,9 @@ asserts the key.
 Kept for context; the authoritative list is `README.md` → FORK NOTICE.
 
 - Rebranded Cherri → graip (display text, storage keys, globals, titles); default theme `midnight`.
-- Wisp handling rewritten: real handshake probing, 30 presets, pooled failover that never overwrites
-  the user's choice, `chosen → fallback` labelling.
+- Wisp handling: strict Wisp v1 frame probing, 35 selectable candidates, pooled failover that never
+  overwrites the user's choice, `chosen → fallback` labelling. Five user-supplied candidates are
+  unverified until a runtime handshake succeeds.
 - TLS failures classified and retried (curl 7/35/60) with explanations; verification stays on.
 - libcurl.js 0.7.5 + libcurl-transport 2.0.6, with a load timeout and `libcurl_abort` handling.
 - Panic key + blackout decoy page (`panic.html`), cloak profiles, auto-`about:blank`.
@@ -1371,7 +1392,7 @@ Kept for context; the authoritative list is `README.md` → FORK NOTICE.
   user left, instead of falling through to `/start.html` via `history.back()`.
 - Current release stamp `v2.1.0 "juice"`: `<graipattr version="s2.1.0">` in `index.html` drives
   the update toast; the Settings footer/Updates panel and `GraipLog.snapshot().appVersion` show
-  `v2.1.0 "juice"`; the shell cache is `graip-shell-v8`. The previous v2.0.0 release was
+  `v2.1.0 "juice"`; the shell cache is `graip-shell-v9`. The previous v2.0.0 release was
   introduced on 2026-10-26.
 - Exportable debug log (verbose on by default) and Debug/Backup settings panels.
 - Tab sessions restored after reload; omnibox shortcuts and bangs.
@@ -1531,7 +1552,7 @@ ls assets/css/themes | wc -l                                       # 16 themes
 ls assets/json && node -e 'for (const f of ["classplay","gn-math","apps","partners"])
   console.log(f, JSON.parse(require("fs").readFileSync(`assets/json/${f}.json`)).length)'
 node --test tests/*.test.js | tail -3                              # 137 pass
-git ls-files | wc -l                                               # 8400
+git ls-files | wc -l                                               # 8403
 ```
 
 If a number here disagrees with the tree, the tree is right: fix the document in the same commit that

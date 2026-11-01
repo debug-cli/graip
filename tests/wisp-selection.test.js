@@ -54,7 +54,7 @@ function createHarness(config = {}) {
       if (this.readyState === 3) return;
       if (answer(this.url)) {
         this.readyState = 1;
-        if (this.onmessage) this.onmessage({ data: new Uint8Array([5, 0, 0, 0, 0]) });
+        if (this.onmessage) this.onmessage({ data: new Uint8Array([3, 0, 0, 0, 0, 32, 0, 0, 0]) });
       } else {
         this.readyState = 1;
         if (this.onerror) this.onerror(new Error("refused"));
@@ -185,6 +185,22 @@ test("pool_starts_with_the_publicly_documented_endpoints", () => {
 
   assert.equal(wisp.PRESETS[0].url, "wss://wisp.mercurywork.shop/");
   assert.ok(wisp.PRESETS.some((preset) => preset.url === "wss://anura.pro/"));
+  const researchCandidates = [
+    "wss://play.wispnetwork.org/",
+    "wss://wisp.webmc.fun/",
+    "wss://proxy.crllect.dev/wisp/",
+    "wss://backend.crllect.dev/wisp/",
+    "wss://pycoder42--5d21a10c4c0811f1a553ee650bb23af1.web.val.run/",
+  ];
+  for (const url of researchCandidates) {
+    assert.ok(wisp.PRESETS.some((preset) => preset.url === url), `missing research candidate ${url}`);
+  }
+  assert.equal(wisp.PRESETS.length, 35);
+  assert.equal(
+    wisp.PRESETS.some((preset) => /(?:example\.com|\.example|USERNAME|127\.0\.0\.1)/i.test(preset.url)),
+    false,
+    "placeholder hosts and the source's localhost example are not public routes"
+  );
   // cross-realm arrays, so compare through JSON instead of deepStrictEqual
   const list = wisp.candidateList();
   assert.deepEqual(

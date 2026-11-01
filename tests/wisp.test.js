@@ -82,7 +82,7 @@ test("candidate_list_keeps_configured_first_and_excludes_normalized_duplicates",
   assert.equal(new Set(candidates).size, candidates.length);
 });
 
-test("probe_waits_for_first_packet", async () => {
+test("probe_waits_for_valid_wisp_v1_continue_frame", async () => {
   const { wisp, sockets } = createWispHarness();
   let settled = false;
   const result = wisp
@@ -97,21 +97,40 @@ test("probe_waits_for_first_packet", async () => {
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(settled, false);
 
-  socket.onmessage({ data: new Uint8Array([1]) });
+  socket.onmessage({ data: new Uint8Array([3, 0, 0, 0, 0, 4, 0, 0, 0]).buffer });
   assert.equal((await result).ok, true);
   assert.equal(socket.readyState, 3);
 });
 
-test("probe_reports_socket_error", async () => {
+test("probe_rejects_invalid_frames_and_reports_socket_errors", async () => {
   const { wisp, sockets } = createWispHarness();
-  const resultPromise = wisp.probeWispServer("wss://wisp.example/");
+  const invalidFrames = [
+    ["wss://not-wisp.example/", new Uint8Array([5, 0, 0, 0, 0, 2, 1])], // Wisp v2 INFO
+    ["wss://wrong-stream.example/", new Uint8Array([3, 1, 0, 0, 0, 4, 0, 0, 0])],
+    ["wss://truncated.example/", new Uint8Array([3, 0, 0, 0, 0, 4])],
+    ["wss://api.example/", '{"status":"connected"}'], // unrelated JSON WebSocket
+  ];
 
-  sockets[0].onerror(new Error("socket failed"));
+  for (const [url, data] of invalidFrames) {
+    const invalidPromise = wisp.probeWispServer(url);
+    const socket = sockets[sockets.length - 1];
+    socket.readyState = 1;
+    socket.onmessage({ data });
 
-  const result = await resultPromise;
-  assert.equal(result.ok, false);
-  assert.equal(result.reason, "socket-error");
-  assert.equal(sockets[0].readyState, 3);
+    const invalid = await invalidPromise;
+    assert.equal(invalid.ok, false);
+    assert.equal(invalid.reason, "invalid-handshake");
+    assert.equal(socket.readyState, 3);
+  }
+
+  const errorPromise = wisp.probeWispServer("wss://wisp.example/");
+  const errorSocket = sockets[sockets.length - 1];
+  errorSocket.onerror(new Error("socket failed"));
+
+  const error = await errorPromise;
+  assert.equal(error.ok, false);
+  assert.equal(error.reason, "socket-error");
+  assert.equal(errorSocket.readyState, 3);
 });
 
 test("probe_reports_response_timeout", async () => {
