@@ -18,6 +18,7 @@
   "use strict";
 
   const VERSION = 1;
+  const APP_VERSION = "v2.1.0 \"juice\"";
 
   const KEYS = {
     verbose: "graip_verboseLogs",
@@ -325,6 +326,7 @@
     snapshot() {
       return {
         app: "graip",
+        appVersion: APP_VERSION,
         version: VERSION,
         exportedAt: now(),
         page: global.location ? safeUrl(global.location.href) : "",
@@ -348,6 +350,7 @@
       const lines = [];
       const snap = api.snapshot();
       lines.push("graip debug log");
+      lines.push(`graip version: ${snap.appVersion}`);
       lines.push(`exported: ${snap.exportedAt}`);
       lines.push(`page: ${snap.page}`);
       lines.push(`verbose: ${snap.verbose}`);

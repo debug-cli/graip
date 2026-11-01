@@ -260,17 +260,79 @@ test("the shell document head is well formed and does not load anything twice", 
   }
 });
 
-test("the release version is 2.0.0 \"juice\" everywhere it is written", () => {
+test("the release version is 2.1.0 \"juice\" everywhere it is written", () => {
   const home = read("index.html");
 
   // one stamp drives the update toast, two places show it to a human
   assert.match(
     home,
-    /<graipattr version="s2\.0\.0"><\/graipattr>/,
-    "the site version stamp must be s2.0.0"
+    /<graipattr version="s2\.1\.0"><\/graipattr>/,
+    "the site version stamp must be s2.1.0"
   );
-  assert.match(home, /v2\.0\.0 (?:&ldquo;|“)juice(?:&rdquo;|”)<\/a>/, "the settings footer shows the release");
-  assert.match(home, /What's New in v2\.0\.0 (?:&ldquo;|“)juice(?:&rdquo;|”)/, "the Updates panel names it");
+  assert.match(home, /v2\.1\.0 (?:&ldquo;|“)juice(?:&rdquo;|”)<\/a>/, "the settings footer shows the release");
+  assert.match(home, /What's New in v2\.1\.0 (?:&ldquo;|“)juice(?:&rdquo;|”)/, "the Updates panel names it");
+  assert.match(
+    home,
+    /<h2>What's New in v2\.1\.0 &ldquo;juice&rdquo;<\/h2>\s*<p class="update-date">Introduced 2026-11-01\.<\/p>/,
+    "the Settings Updates panel places the exact introduction date under the version heading"
+  );
+  assert.match(
+    home,
+    /<h2>What's New in v2\.0\.0 &ldquo;juice&rdquo;<\/h2>\s*<p class="update-date">Introduced 2026-10-26\.<\/p>/,
+    "the previous release is also dated natively in Settings"
+  );
+
+  const readme = read("README.md");
+  assert.match(readme, /^### v2\.1\.0 "juice" — introduced 2026-11-01$/m, "the new release date is recorded");
+  assert.match(readme, /^### v2\.0\.0 "juice" — introduced 2026-10-26$/m, "the previous release is dated");
+  const releaseStart = readme.indexOf('### v2.1.0 "juice"');
+  const releaseEnd = readme.indexOf('### v2.0.0 "juice"', releaseStart);
+  const changelog = readme.slice(releaseStart, releaseEnd);
+  const updatesStart = home.indexOf('<div id="settings-updates"');
+  const updatesEnd = home.indexOf("</div>", updatesStart);
+  const updates = home.slice(updatesStart, updatesEnd);
+  for (const label of [
+    "Version surfaces",
+    "Support logs",
+    "Offline shell",
+    "Wisp routes",
+    "Research archive",
+    "Dated releases",
+    "Homepage branding",
+  ]) {
+    assert.ok(changelog.includes(`**${label}:**`), `README changelog missing ${label}`);
+    assert.ok(updates.includes(`<b>${label}</b>`), `Settings Updates missing ${label}`);
+  }
+  assert.ok(updates.includes("C2-associated Lunaron"), "Settings Updates includes the Wisp-source exclusion note");
+
+  const previousReleaseStart = readme.indexOf('### v2.0.0 "juice"');
+  const previousReleaseEnd = readme.indexOf("## Credits", previousReleaseStart);
+  const previousChangelog = readme.slice(previousReleaseStart, previousReleaseEnd);
+  for (const label of [
+    "More reliable proxying",
+    "Panic key and cloaking",
+    "Settings backup",
+    "Debugging and privacy",
+    "Browser and sessions",
+    "Mobile and accessibility",
+    "Stability and maintenance",
+    "Desktop and mobile UI polish (PR #4)",
+    "Motion and navigation",
+    "Editable splash phrases (PR #5)",
+    "README badges (PR #5)",
+    "README presentation (PR #6)",
+    "Creator credit (PR #7)",
+  ]) {
+    assert.ok(previousChangelog.includes(`**${label}:**`), `README changelog missing ${label}`);
+    assert.ok(updates.includes(`<b>${label}</b>`), `Settings Updates missing ${label}`);
+  }
+
+  const agents = read("AGENTS.md");
+  assert.match(agents, /Every README release heading must include the date/);
+  assert.match(agents, /Mirror each dated README release entry in the native Settings → Updates panel/);
+  assert.match(home, /https:\/\/fonts\.googleapis\.com\/css2\?family=Space\+Mono:wght@400;700&amp;display=swap/);
+  assert.match(home, /<h1 class="text-7xl font-medium home-gradient home-title">/);
+  assert.match(read("styles/index.css"), /#homeContent \.home-title\s*\{\s*font-family:\s*"Space Mono",\s*monospace;\s*\}/);
 
   // no first-party file may still advertise the old release
   const files = ["index.html", "404.html", "newtab.html", "panic.html", "manifest.json", "README.md", "AGENTS.md"]
@@ -286,7 +348,7 @@ test("the release version is 2.0.0 \"juice\" everywhere it is written", () => {
   assert.deepEqual(stale, [], `still advertising the old version: ${stale.join(", ")}`);
 
   // the shell cache name carries the release so a new build retires the old one
-  assert.match(read("sw.js"), /const SHELL_CACHE = "graip-shell-v7";/);
+  assert.match(read("sw.js"), /const SHELL_CACHE = "graip-shell-v10";/);
 });
 
 test("special thanks lists the README credits and settings categories can scroll", () => {

@@ -174,11 +174,13 @@ test("log_exports_valid_json_and_readeable_text", () => {
 
   const parsed = JSON.parse(log.exportJSON());
   assert.equal(parsed.app, "graip");
+  assert.equal(parsed.appVersion, 'v2.1.0 "juice"');
   assert.ok(parsed.entries.length >= 1);
   assert.equal(parsed.entries.at(-1).message, "hello");
 
   const text = log.exportText();
   assert.ok(text.startsWith("graip debug log"));
+  assert.match(text, /graip version: v2\.1\.0 "juice"/);
   assert.match(text, /\[INFO\] \(app\) hello/);
 });
 

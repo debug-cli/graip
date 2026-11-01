@@ -138,6 +138,10 @@ li.toright {
     overflow: visible;
 }
 
+#homeContent .home-title {
+    font-family: "Space Mono", monospace;
+}
+
 #homeContent.hidden {
     display: none;
 }
