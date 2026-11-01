@@ -459,9 +459,9 @@ Guidelines, architecture notes and known traps are in [`AGENTS.md`](./AGENTS.md)
 
 ### v2.1.0 "juice" — introduced 2026-11-01
 
-- **Version surfaces:** update the Settings Updates panel, footer and app update stamp to `v2.1.0 "juice"`.
+- **Version surfaces:** update the Settings footer and app update stamp to `v2.1.0 "juice"`; mirror dated README release notes in the native Settings Updates panel.
 - **Support logs:** include `appVersion` in JSON exports and a Graip version line in text exports, while keeping the debug-log schema version separate.
-- **Offline shell:** advance the cache to `graip-shell-v9` so the updated shell replaces the prior cached release.
+- **Offline shell:** advance the cache to `graip-shell-v10` so the updated shell replaces the prior cached release.
 - **Wisp routes:** add Wisp Network, WebMC, Crllect Proxy, Crllect Backend, and Val Town as
   selectable community candidates from the supplied research; validate the Wisp v1 `CONTINUE` frame
   on stream 0 instead of accepting any WebSocket message. Exclude the source's C2-associated Lunaron
@@ -469,6 +469,7 @@ Guidelines, architecture notes and known traps are in [`AGENTS.md`](./AGENTS.md)
   live-verified here.
 - **Research archive:** preserve the supplied technical data in [`docs/research/public-wisp-servers-technical-data.md`](docs/research/public-wisp-servers-technical-data.md), with its limitations documented in `AGENTS.md`.
 - **Dated releases:** add introduction dates for v2.0.0 and v2.1.0, document complete release notes and version-prefixed PR titles in `AGENTS.md`.
+- **Homepage branding:** use Space Mono from Google Fonts for the homepage title, with a monospace fallback.
 
 ### v2.0.0 "juice" — introduced 2026-10-26
 

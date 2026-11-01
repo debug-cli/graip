@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width">
     <link rel="icon" type="image/svg+xml" href="/assets/img/fav.png">
     <title>graip</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;display=swap">
     <script>
         try {
             if (localStorage.getItem("graip_reduceMotion") === "yes") {
@@ -151,7 +155,7 @@
         </ul>
     </nav>
     <div id="homeContent">
-        <h1 class="text-7xl font-medium home-gradient">
+        <h1 class="text-7xl font-medium home-gradient home-title">
             graip</h1>
         <p id="splash" class="text-medium font-light text-white/50">
             wsp
@@ -627,14 +631,55 @@
 
                 <div id="settings-updates" class="settings-page">
                     <h2>What's New in v2.1.0 &ldquo;juice&rdquo;</h2>
+                    <p class="update-date">Introduced 2026-11-01.</p>
                     <p class="update-cont">
-                        Introduced November 1, 2026.
-                        <br><br>
-                        <b>Debug log</b><br>
-                        • JSON and text exports now identify the Graip app version, so support reports can be matched to a build <br>
-                        <br>
-                        <b>Wisp servers</b><br>
-                        • Five community Wisp candidates are selectable but unverified; each must pass a live handshake before routing <br>
+                        <b>Version surfaces</b><br>
+                        • The app update stamp, Settings Updates panel, and Settings footer identify v2.1.0 &ldquo;juice&rdquo;.<br><br>
+                        <b>Support logs</b><br>
+                        • JSON and text exports include the Graip app version; the debug-log schema version remains separate.<br><br>
+                        <b>Offline shell</b><br>
+                        • The shell cache is now graip-shell-v10 so updated assets replace the previous cached shell.<br><br>
+                        <b>Wisp routes</b><br>
+                        • Add Wisp Network, WebMC, Crllect Proxy, Crllect Backend, and Val Town as selectable candidates. Each route must pass a valid binary Wisp v1 CONTINUE frame; the candidates are not independently live-verified. Exclude the source's C2-associated Lunaron entry, placeholders, and unrelated OpenWISP telemetry.<br><br>
+                        <b>Research archive</b><br>
+                        • Preserve the supplied technical data in docs/research/public-wisp-servers-technical-data.md and document its limitations for future maintainers.<br><br>
+                        <b>Dated releases</b><br>
+                        • README release entries now include introduction dates and complete version notes; AGENTS.md records the release and PR-title rules.<br><br>
+                        <b>Homepage branding</b><br>
+                        • The &ldquo;graip&rdquo; title uses Space Mono from Google Fonts, with a monospace fallback.
+                    </p>
+                    <br>
+                    <h2>What's New in v2.0.0 &ldquo;juice&rdquo;</h2>
+                    <p class="update-date">Introduced 2026-10-26.</p>
+                    <p class="update-cont">
+                        <b>Release overview</b><br>
+                        • A major reliability and usability release delivered across PRs #1&ndash;#7.<br><br>
+                        <b>More reliable proxying</b><br>
+                        • Probe and fail over between Wisp routes, bound retries, and show useful proxy error pages. TLS verification stays enabled and certificate errors are explained.<br><br>
+                        <b>Panic key and cloaking</b><br>
+                        • Configure a panic key, destination, and decoy; nine cloak profiles adjust the tab title, icon, and apparent page. Return to the exact page, tabs, drawer, and Settings panel you left.<br><br>
+                        <b>Settings backup</b><br>
+                        • Export preferences to JSON and restore them with per-setting validation; unsafe or unknown values are skipped without blocking valid settings.<br><br>
+                        <b>Debugging and privacy</b><br>
+                        • Add a bounded, exportable log that records useful events, redacts query strings and sensitive destinations, and exports JSON or plain text.<br><br>
+                        <b>Browser and sessions</b><br>
+                        • Restore tab history after reload; support URLs, searches, and shortcuts in the address bar; surface Wisp failures instead of leaving tabs stuck.<br><br>
+                        <b>Mobile and accessibility</b><br>
+                        • Add an installable PWA shell, responsive small-screen layouts, scrollable Settings categories, reduced-motion controls, and clearer recovery from dead integrations.<br><br>
+                        <b>Stability and maintenance</b><br>
+                        • Repair broken page links and Settings wiring, tolerate missing browser APIs, add library thumbnail fallbacks and health checks, and document the project while retaining the midnight theme and v2.0.0 &ldquo;juice&rdquo; stamp.<br><br>
+                        <b>Desktop and mobile UI polish (PR #4)</b><br>
+                        • Align Apps and Games tiles, preserve desktop launch behavior, improve mobile game details and Movies/Special Thanks layouts, and keep mobile-only CSS scoped.<br><br>
+                        <b>Motion and navigation</b><br>
+                        • Start fog when the document is ready, synchronize it with Reduced Motion, and remove Discord from first-party desktop and mobile menus.<br><br>
+                        <b>Editable splash phrases (PR #5)</b><br>
+                        • Move the homepage splash loader and UTF-8 phrases into assets/splashes/; support safe optional HTTPS links in the phrase list.<br><br>
+                        <b>README badges (PR #5)</b><br>
+                        • Replace Shields.io with theme-aware ShieldCN badges for repository metrics, project facts, and deploy options; keep the test count current.<br><br>
+                        <b>README presentation (PR #6)</b><br>
+                        • Add a restrained homepage screenshot, a repeating purple JetBrains Mono typing title, and a Changelog link in the README contents.<br><br>
+                        <b>Creator credit (PR #7)</b><br>
+                        • Add the debug-cli GitHub profile and avatar to Special Thanks on desktop and mobile.
                     </p>
                 </div>
             </div>

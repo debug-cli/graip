@@ -14,6 +14,7 @@ and the counts are reproducible with the commands in [Verifying this document](#
 - Never add, edit, or invent a release entry unless the user explicitly asks to change the version name or number across the repository. Never guess a version string; use only the exact version the user supplies.
 - Every README release heading must include the date the version was introduced in `YYYY-MM-DD` form. For historical entries, use verifiable release evidence (v2.0.0 was introduced when PR #2 merged on 2026-10-26); never guess a date.
 - Keep one README entry per version and record **all changes included in that version** there. Update that entry as work is completed; do not leave placeholders or split notes into chat/PR headings.
+- Mirror each dated README release entry in the native Settings → Updates panel: show the exact version and introduction date immediately beneath the heading, and include every change listed for that release. Keep both surfaces in sync; a link to the README is not a substitute for native Settings content.
 - Prefix the PR title for release work with the exact version and `initial:`, followed by a concise summary; for example, `v2.1.0 initial: version metadata and dated changelog`.
 
 ## 0. How to use this document
@@ -206,10 +207,10 @@ state is CSS classes `settings-shown` / `settings-hidden` — there is no boolea
 | `#settings-debug` | 512 | Verbose toggle slot, export JSON/TXT/copy/clear, "Test all Wisp routes", log preview, library health |
 | `#settings-proxy` | 550 | Wisp selector + custom URL + status, backend selector, search engine selector |
 | `#settings-info` | 591 | Credits |
-| `#settings-updates` | 618 | Version + release link |
+| `#settings-updates` | 632 | Dated version heading + complete release notes mirrored from README |
 
 Sidebar entries carry `data-target`, which must equal the panel suffix. `switchSettingsPage(target)`
-(script block at 1024) looks up `#settings-${target}`, ignores unknown targets (a bad `data-target`
+(script block at 1176) looks up `#settings-${target}`, ignores unknown targets (a bad `data-target`
 must never blank the area), removes `.settings-active` from every `.settings-page`, adds it to the
 target, and logs `panel <target>`. Deep link: `/?launch=1&settings=1&section=proxy`.
 
@@ -217,18 +218,18 @@ target, and logs `panel <target>`. Deep link: `/?launch=1&settings=1&section=pro
 
 | Lines | What it does |
 | --- | --- |
-| 40–57 | First inline block: redirect to `/start.html` unless `?launch` is present (the disguise) |
-| 748–757 | `particlesJS.load` when `graip_particlesOn` is `yes` |
-| 760–912 | **Library loaders**: `gj(file)`, `load(file, type, fn, toRun, prefix)`, `noteLibraryIssue`, `showPlaceholder`, `applyThumb`, `observe` (IntersectionObserver), initial `load("apps"…)` + `load(selectedStore…)`, `storeUpdated` listener |
-| 914–1002 | `registerSW()`: registers `/uv/sw.js` then `/sw.js`, toasts, hides the spinner, enables `#homesearch` |
-| 1022–1030 | Address-bar Enter handler (`#searchbar` → `rSearch`) |
-| 1032–1040 | `load`: clears stale `.active` frames |
-| 1042–1425 | Drawer/settings machinery: `switchSettingsPage`, `toggleSettings/Apps/Games/Partners/DownloadGames`, `GraipShellState` (1237–1382), `rSearch`, `searchApps` |
-| 1426–1440 | `#homesearch` Enter handler |
-| 1445–1486 | `updatePJS()` fog toggle (tears down/creates the Vanta effect) |
-| 1487–1505 | `updateOverlaySettings()` (`graip_useOverlay`) |
-| 1507–1674 | Version check (`graip_siteVersion`), `resetTheme()`, `openAB()`, `updateABSettings()`, `updateCLSettings()` (confirm-leave), `updateCur()` (cursor), two `beforeunload` guards, `DOMContentLoaded` deep-link handler |
-| 1676–1831 | Vanta effect (WebGL, guarded), visitor counter, `setWispStatus`, `setCurrentWispServer`, Wisp custom-input prefill, `setWisp`, `testWispServer` |
+| 52–58 | First inline block: redirect to `/start.html` unless `?launch` is present (the disguise) |
+| 803–813 | `particlesJS.load` when `graip_particlesOn` is `yes` |
+| 814–1033 | **Library loaders**: `gj(file)`, `load(file, type, fn, toRun, prefix)`, `noteLibraryIssue`, `showPlaceholder`, `applyThumb`, `observe` (IntersectionObserver), `searchApps`, initial `load("apps"…)` + `load(selectedStore…)`, `storeUpdated` listener |
+| 1034–1129 | `registerSW()`: registers `/uv/sw.js` then `/sw.js`, toasts, hides the spinner, enables `#homesearch` |
+| 1130–1139 | Address-bar Enter handler (`#searchbar` → `nav`) |
+| 1140–1149 | `load`: clears stale `.active` frames |
+| 1150–1548 | Drawer/settings machinery: `switchSettingsPage`, `toggleSettings/Apps/Games/Partners/DownloadGames`, `GraipShellState` (1346–1505), `rSearch` |
+| 1549–1563 | `#homesearch` Enter handler |
+| 1564–1633 | `updatePJS()` fog toggle (tears down/creates the Vanta effect) |
+| 1634–1656 | `updateOverlaySettings()` (`graip_useOverlay`) |
+| 1657–1826 | Version check (`graip_siteVersion`), `resetTheme()`, `openAB()`, `updateABSettings()`, `updateCLSettings()` (confirm-leave), `updateCur()` (cursor), two `beforeunload` guards, `DOMContentLoaded` deep-link handler |
+| 1827–2018 | Vanta effect (WebGL, guarded), visitor counter, `setWispStatus`, `setCurrentWispServer`, Wisp custom-input prefill, `setWisp`, `testWispServer` |
 
 If you need to add shell behaviour, prefer a **new script block at the end** over editing an existing
 one: the blocks share the global scope, and a throw in an early block silently kills everything after
@@ -649,7 +650,7 @@ Never write a `cherri_*` key.
 
 | Cache | Contents | Invalidation |
 | --- | --- | --- |
-| `graip-shell-v9` | 27 same-origin shell assets (`SHELL_ASSETS`) | Bump `SHELL_CACHE`; `activate` deletes every `graip-shell-*` that does not match |
+| `graip-shell-v10` | 27 same-origin shell assets (`SHELL_ASSETS`) | Bump `SHELL_CACHE`; `activate` deletes every `graip-shell-*` that does not match |
 
 Proxy responses and cross-origin requests are never cached. Range requests bypass the cache entirely.
 
@@ -687,7 +688,7 @@ shell. `importScripts("/assets/js/proxy-errors.js", "/homework/chemistry.sw.js")
 
 | Event | Behaviour |
 | --- | --- |
-| `install` | `skipWaiting()` immediately, then opens `graip-shell-v9` and `cache.add`s every `SHELL_ASSETS` entry individually (one failure must not fail the install) |
+| `install` | `skipWaiting()` immediately, then opens `graip-shell-v10` and `cache.add`s every `SHELL_ASSETS` entry individually (one failure must not fail the install) |
 | `activate` | Deletes stale `graip-shell-*` caches, then `clients.claim()` |
 
 Before this fork, the worker never called `skipWaiting()`, so a fix to this file (or to the blocklist)
@@ -1392,7 +1393,7 @@ Kept for context; the authoritative list is `README.md` → FORK NOTICE.
   user left, instead of falling through to `/start.html` via `history.back()`.
 - Current release stamp `v2.1.0 "juice"`: `<graipattr version="s2.1.0">` in `index.html` drives
   the update toast; the Settings footer/Updates panel and `GraipLog.snapshot().appVersion` show
-  `v2.1.0 "juice"`; the shell cache is `graip-shell-v9`. The previous v2.0.0 release was
+  `v2.1.0 "juice"`; the shell cache is `graip-shell-v10`. The previous v2.0.0 release was
   introduced on 2026-10-26.
 - Exportable debug log (verbose on by default) and Debug/Backup settings panels.
 - Tab sessions restored after reload; omnibox shortcuts and bangs.
