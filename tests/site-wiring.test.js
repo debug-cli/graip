@@ -260,17 +260,22 @@ test("the shell document head is well formed and does not load anything twice", 
   }
 });
 
-test("the release version is 2.0.0 \"juice\" everywhere it is written", () => {
+test("the release version is 2.1.0 \"juice\" everywhere it is written", () => {
   const home = read("index.html");
 
   // one stamp drives the update toast, two places show it to a human
   assert.match(
     home,
-    /<graipattr version="s2\.0\.0"><\/graipattr>/,
-    "the site version stamp must be s2.0.0"
+    /<graipattr version="s2\.1\.0"><\/graipattr>/,
+    "the site version stamp must be s2.1.0"
   );
-  assert.match(home, /v2\.0\.0 (?:&ldquo;|“)juice(?:&rdquo;|”)<\/a>/, "the settings footer shows the release");
-  assert.match(home, /What's New in v2\.0\.0 (?:&ldquo;|“)juice(?:&rdquo;|”)/, "the Updates panel names it");
+  assert.match(home, /v2\.1\.0 (?:&ldquo;|“)juice(?:&rdquo;|”)<\/a>/, "the settings footer shows the release");
+  assert.match(home, /What's New in v2\.1\.0 (?:&ldquo;|“)juice(?:&rdquo;|”)/, "the Updates panel names it");
+
+  const readme = read("README.md");
+  assert.match(readme, /^### v2\.1\.0 "juice" — introduced 2026-11-01$/m, "the new release date is recorded");
+  assert.match(readme, /^### v2\.0\.0 "juice" — introduced 2026-10-26$/m, "the previous release is dated");
+  assert.match(read("AGENTS.md"), /Every README release heading must include the date/);
 
   // no first-party file may still advertise the old release
   const files = ["index.html", "404.html", "newtab.html", "panic.html", "manifest.json", "README.md", "AGENTS.md"]
@@ -286,7 +291,7 @@ test("the release version is 2.0.0 \"juice\" everywhere it is written", () => {
   assert.deepEqual(stale, [], `still advertising the old version: ${stale.join(", ")}`);
 
   // the shell cache name carries the release so a new build retires the old one
-  assert.match(read("sw.js"), /const SHELL_CACHE = "graip-shell-v7";/);
+  assert.match(read("sw.js"), /const SHELL_CACHE = "graip-shell-v8";/);
 });
 
 test("special thanks lists the README credits and settings categories can scroll", () => {

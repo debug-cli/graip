@@ -11,9 +11,10 @@ and the counts are reproducible with the commands in [Verifying this document](#
 
 ## Changelog and version naming rule
 
-- Never add, edit, or invent a changelog entry unless the user explicitly asks to change the version name or number across the repository.
-- Never guess or hallucinate a version name or number. Use only the exact version string supplied by the user; do not create release entries for ordinary feature work or separate chats.
-- The README changelog groups work under version headings, not chat/PR headings. Append a release entry only as part of a user-requested repo-wide version change.
+- Never add, edit, or invent a release entry unless the user explicitly asks to change the version name or number across the repository. Never guess a version string; use only the exact version the user supplies.
+- Every README release heading must include the date the version was introduced in `YYYY-MM-DD` form. For historical entries, use verifiable release evidence (v2.0.0 was introduced when PR #2 merged on 2026-10-26); never guess a date.
+- Keep one README entry per version and record **all changes included in that version** there. Update that entry as work is completed; do not leave placeholders or split notes into chat/PR headings.
+- Prefix the PR title for release work with the exact version and `initial:`, followed by a concise summary; for example, `v2.1.0 initial: version metadata and dated changelog`.
 
 ## 0. How to use this document
 
@@ -301,7 +302,7 @@ browser pages:   baremux/index.js → math.all.js → wisp.js → t.js → engli
 throw. Everything else is `defer` or ordered by hand where one file reads another's globals
 (`dropdown.js` reads `GraipWisp.PRESETS` and `GraipCloak.PROFILES`; `debug-panel.js` reads both).
 
-### 5.1 `assets/js/log.js` — `window.GraipLog` (547 lines)
+### 5.1 `assets/js/log.js` — `window.GraipLog` (586 lines)
 
 A bounded, redacting recorder. Design constraints: never throw, never log a query string, never grow
 without limit.
@@ -312,6 +313,8 @@ without limit.
 | `STORAGE_LIMIT` | 400 | Entries mirrored to `graip_debugLog` |
 | `MAX_DATA_CHARS` | 2000 | Truncation for `message` and serialized `data` |
 | `LEVELS` | debug 10, info 20, warn 30, error 40 | Verbose off keeps ≥ warn |
+| `VERSION` | `1` | Debug-log export format version; not the Graip app version |
+| `APP_VERSION` | `v2.1.0 "juice"` | Current release, included in JSON and text exports |
 | `KEYS.verbose` / `KEYS.buffer` | `graip_verboseLogs` / `graip_debugLog` | The two keys this file actually touches |
 | `KEYS.maxEntries` | `graip_debugMaxEntries` | **Declared but never used.** `MEMORY_LIMIT`/`STORAGE_LIMIT` are the real caps; `settings-io.js` lists the key in `IGNORED` so it can never be imported |
 
@@ -328,7 +331,7 @@ API:
 | --- | --- |
 | `debug/info/warn/error(category, message, data)` | Record; `action()` is `debug` level and exists so user actions read clearly in the text export |
 | `log(level, …)`, `safeUrl(url)`, `cleanData(value, depth)` | Lower-level helpers (also used by `cloak.js`, `panic.html`) |
-| `entries()`, `recent(limit)`, `snapshot()` | In-memory copy / last N / export envelope |
+| `entries()`, `recent(limit)`, `snapshot()` | In-memory copy / last N / export envelope; `snapshot()` includes `appVersion` and keeps `version` as the log-format version |
 | `subscribe(fn)` | Panel re-render hook |
 | `isVerbose()`, `setVerbose(bool)`, `toggleVerbose()` | Persists `graip_verboseLogs` (`on`/`off`) and re-posts the SW config |
 | `configureServiceWorker()` | `controller.postMessage({ $graip$logConfig: { verbose } })` |
@@ -640,7 +643,7 @@ Never write a `cherri_*` key.
 
 | Cache | Contents | Invalidation |
 | --- | --- | --- |
-| `graip-shell-v2` | 27 same-origin shell assets (`SHELL_ASSETS`) | Bump `SHELL_CACHE`; `activate` deletes every `graip-shell-*` that does not match |
+| `graip-shell-v8` | 27 same-origin shell assets (`SHELL_ASSETS`) | Bump `SHELL_CACHE`; `activate` deletes every `graip-shell-*` that does not match |
 
 Proxy responses and cross-origin requests are never cached. Range requests bypass the cache entirely.
 
@@ -678,7 +681,7 @@ shell. `importScripts("/assets/js/proxy-errors.js", "/homework/chemistry.sw.js")
 
 | Event | Behaviour |
 | --- | --- |
-| `install` | `skipWaiting()` immediately, then opens `graip-shell-v2` and `cache.add`s every `SHELL_ASSETS` entry individually (one failure must not fail the install) |
+| `install` | `skipWaiting()` immediately, then opens `graip-shell-v8` and `cache.add`s every `SHELL_ASSETS` entry individually (one failure must not fail the install) |
 | `activate` | Deletes stale `graip-shell-*` caches, then `clients.claim()` |
 
 Before this fork, the worker never called `skipWaiting()`, so a fix to this file (or to the blocklist)
@@ -1167,10 +1170,13 @@ still a record of *what the user did* (not where) — treat an exported log as p
   `/assets/*` 7-day cache, `nosniff` and `no-referrer`. No build, no rewrites.
 - **Cloudflare Pages**: 25 MB per-file limit forces the GN-Math store only; the Classplay game files do
   not fit (`MOVING.md` records this).
-- **Release checklist**: only change version strings when the user supplies the exact requested
-  version name/number and explicitly asks for the repo-wide update. On that request, update the
-  established version stamps, bump `SHELL_CACHE` if shell behaviour changed, run the tests, and add
-  one README changelog entry under that release heading. Never create chat/PR-specific entries.
+- **Release checklist**: only change versions when the user supplies the exact name/number and asks
+  for a repo-wide update. Keep the index version stamp, Settings footer/Updates panel,
+  `assets/js/log.js` `APP_VERSION`, tests and README heading synchronized; keep the log/settings schema
+  versions separate from the app release version. Bump `SHELL_CACHE` when shell behavior/assets
+  change. Run the tests and update one dated README entry with every change included in the release.
+- Prefix the release PR title with `<version> initial: <concise changes>` (for example,
+  `v2.1.0 initial: version metadata and dated changelog`).
 - Do not add an automated upstream sync workflow. Keep fork-specific work on the current Arena branch.
 
 ---
@@ -1363,8 +1369,10 @@ Kept for context; the authoritative list is `README.md` → FORK NOTICE.
 - Panic key + blackout decoy page (`panic.html`), cloak profiles, auto-`about:blank`.
 - Panic return point: the decoy reopens graip at the exact URL, page, drawer and settings panel the
   user left, instead of falling through to `/start.html` via `history.back()`.
-- Release stamp `v2.0.0 "juice"`: `<graipattr version>` in `index.html` (drives the update toast),
-  the settings footer, the Updates panel and the versioned shell cache (currently `graip-shell-v7`).
+- Current release stamp `v2.1.0 "juice"`: `<graipattr version="s2.1.0">` in `index.html` drives
+  the update toast; the Settings footer/Updates panel and `GraipLog.snapshot().appVersion` show
+  `v2.1.0 "juice"`; the shell cache is `graip-shell-v8`. The previous v2.0.0 release was
+  introduced on 2026-10-26.
 - Exportable debug log (verbose on by default) and Debug/Backup settings panels.
 - Tab sessions restored after reload; omnibox shortcuts and bangs.
 - Mobile layout (desktop unchanged); PWA manifest + offline shell cache; `vercel.json` headers.

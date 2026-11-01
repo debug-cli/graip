@@ -248,7 +248,8 @@ route recovery, proxied requests (reported by the service worker), network failu
 uncaught error. Verbose mode is **on by default** and keeps warnings/errors even when turned off.
 
 Export it as **JSON** or **TXT**, or copy it to the clipboard — one file is usually enough to explain
-why a site is "broken" on a school network.
+why a site is "broken" on a school network. Each export identifies the Graip app version separately
+from the debug-log format version, so a report can be matched to the build that created it.
 
 The same panel has **Library health**: on-demand validation of the bundled game/app lists (shape,
 duplicates, missing thumbnails).
@@ -456,7 +457,14 @@ Guidelines, architecture notes and known traps are in [`AGENTS.md`](./AGENTS.md)
 
 ## Changelog
 
-### v2.0.0 "juice"
+### v2.1.0 "juice" — introduced 2026-11-01
+
+- **Version surfaces:** update the Settings Updates panel, footer and app update stamp to `v2.1.0 "juice"`.
+- **Support logs:** include `appVersion` in JSON exports and a Graip version line in text exports, while keeping the debug-log schema version separate.
+- **Offline shell:** advance the cache to `graip-shell-v8` so the updated shell replaces the prior cached release.
+- **Dated releases:** add introduction dates for v2.0.0 and v2.1.0, document complete release notes and version-prefixed PR titles in `AGENTS.md`.
+
+### v2.0.0 "juice" — introduced 2026-10-26
 
 A major reliability and usability release, delivered across [PR #1](https://github.com/debug-cli/graip/pull/1),
 [PR #2](https://github.com/debug-cli/graip/pull/2), [PR #3](https://github.com/debug-cli/graip/pull/3),
