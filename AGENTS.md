@@ -650,7 +650,7 @@ Never write a `cherri_*` key.
 
 | Cache | Contents | Invalidation |
 | --- | --- | --- |
-| `graip-shell-v10` | 27 same-origin shell assets (`SHELL_ASSETS`) | Bump `SHELL_CACHE`; `activate` deletes every `graip-shell-*` that does not match |
+| `graip-shell-v11` | 29 same-origin shell assets (`SHELL_ASSETS`) | Bump `SHELL_CACHE`; `activate` deletes every `graip-shell-*` that does not match |
 
 Proxy responses and cross-origin requests are never cached. Range requests bypass the cache entirely.
 
@@ -688,7 +688,7 @@ shell. `importScripts("/assets/js/proxy-errors.js", "/homework/chemistry.sw.js")
 
 | Event | Behaviour |
 | --- | --- |
-| `install` | `skipWaiting()` immediately, then opens `graip-shell-v10` and `cache.add`s every `SHELL_ASSETS` entry individually (one failure must not fail the install) |
+| `install` | `skipWaiting()` immediately, then opens `graip-shell-v11` and `cache.add`s every `SHELL_ASSETS` entry individually (one failure must not fail the install) |
 | `activate` | Deletes stale `graip-shell-*` caches, then `clients.claim()` |
 
 Before this fork, the worker never called `skipWaiting()`, so a fix to this file (or to the blocklist)
@@ -737,9 +737,9 @@ first page load configures it.
 
 ### 8.6 Shell cache
 
-`SHELL_ASSETS` = 27 first-party files (shell HTML, the CSS/JS the shell needs, `particles.json`,
-`fav.png`). `shellRequest()` is network-first with a cache fallback so a deploy is picked up
-immediately and an offline visit still boots. Bump `SHELL_CACHE` when the list or behaviour changes.
+`SHELL_ASSETS` = 29 first-party files (shell HTML, the CSS/JS the shell needs, `particles.json`,
+`fav.png`, and `fav.svg`). `shellRequest()` is network-first with a cache fallback so a deploy is
+picked up immediately and an offline visit still boots. Bump `SHELL_CACHE` when the list or behaviour changes.
 
 ---
 
@@ -1068,8 +1068,8 @@ desktop view cannot change by accident. Add mobile fixes inside those blocks, ne
 ### 14.2 Images
 
 `assets/img/games/` 119 PNGs + `assets/img/games/gn-math/` 622 (one per GN-Math entry);
-`assets/img/apps/` 50 (29 referenced); `assets/img/cloaks/` 8; `assets/img/partners/` 2; `fav.png`
-(160×160), `fav.svg`, `cover.png`, `s.png`, `c-down.png`. Thumbnails are lazy (`data-bg` +
+`assets/img/apps/` 50 (29 referenced); `assets/img/cloaks/` 8; `assets/img/partners/` 2; transparent
+`fav.png` (160×160) plus its matching vector `fav.svg`, `cover.png`, `s.png`, `c-down.png`. Thumbnails are lazy (`data-bg` +
 IntersectionObserver), never `<img>` in the grid.
 
 ### 14.3 Fonts and icons
@@ -1393,7 +1393,7 @@ Kept for context; the authoritative list is `README.md` → FORK NOTICE.
   user left, instead of falling through to `/start.html` via `history.back()`.
 - Current release stamp `v2.1.0 "juice"`: `<graipattr version="s2.1.0">` in `index.html` drives
   the update toast; the Settings footer/Updates panel and `GraipLog.snapshot().appVersion` show
-  `v2.1.0 "juice"`; the shell cache is `graip-shell-v10`. The previous v2.0.0 release was
+  `v2.1.0 "juice"`; the shell cache is `graip-shell-v11`. The previous v2.0.0 release was
   introduced on 2026-10-26.
 - Exportable debug log (verbose on by default) and Debug/Backup settings panels.
 - Tab sessions restored after reload; omnibox shortcuts and bangs.

@@ -334,6 +334,20 @@ test("the release version is 2.1.0 \"juice\" everywhere it is written", () => {
   assert.match(home, /<h1 class="text-7xl font-medium home-gradient home-title">/);
   assert.match(read("styles/index.css"), /#homeContent \.home-title\s*\{\s*font-family:\s*"Space Mono",\s*monospace;\s*\}/);
 
+  const newtab = read("newtab.html");
+  for (const page of [home, newtab]) {
+    assert.match(page, /<link rel="icon" type="image\/svg\+xml" href="\/assets\/img\/fav\.svg">/);
+    assert.match(page, /<link rel="icon" type="image\/png" href="\/assets\/img\/fav\.png">/);
+  }
+  const iconPng = fs.readFileSync(path.join(ROOT, "assets/img/fav.png"));
+  assert.equal(iconPng.readUInt32BE(16), 160, "the app icon PNG is 160px wide");
+  assert.equal(iconPng.readUInt32BE(20), 160, "the app icon PNG is 160px tall");
+  assert.equal(iconPng[25], 6, "the app icon PNG includes an alpha channel");
+  const iconSvg = read("assets/img/fav.svg");
+  assert.match(iconSvg, /<rect\b/);
+  assert.doesNotMatch(iconSvg, /<image\b/i, "the SVG uses vector geometry rather than embedded raster art");
+  assert.doesNotMatch(iconSvg, /<rect\b[^>]*\bfill="#fff(?:fff)?"/i, "the SVG has no white background rectangle");
+
   // no first-party file may still advertise the old release
   const files = ["index.html", "404.html", "newtab.html", "panic.html", "manifest.json", "README.md", "AGENTS.md"]
     .concat(fs.readdirSync(path.join(ROOT, "pages")).filter((f) => f.endsWith(".html")).map((f) => `pages/${f}`))
@@ -348,7 +362,10 @@ test("the release version is 2.1.0 \"juice\" everywhere it is written", () => {
   assert.deepEqual(stale, [], `still advertising the old version: ${stale.join(", ")}`);
 
   // the shell cache name carries the release so a new build retires the old one
-  assert.match(read("sw.js"), /const SHELL_CACHE = "graip-shell-v10";/);
+  const worker = read("sw.js");
+  assert.match(worker, /const SHELL_CACHE = "graip-shell-v11";/);
+  assert.match(worker, /"\/assets\/img\/fav\.png"/);
+  assert.match(worker, /"\/assets\/img\/fav\.svg"/);
 });
 
 test("special thanks lists the README credits and settings categories can scroll", () => {
