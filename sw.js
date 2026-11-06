@@ -42,7 +42,7 @@ self.addEventListener("activate", (event) => {
  * Bump SHELL_VERSION when the list or the shell's behaviour changes; activate
  * deletes every cache that does not match.
  */
-const SHELL_CACHE = "graip-shell-v11";
+const SHELL_CACHE = "graip-shell-v12";
 const SHELL_ASSETS = [
 	"/index.html",
 	"/newtab.html",
@@ -73,6 +73,8 @@ const SHELL_ASSETS = [
 	"/assets/json/config/particles.json",
 	"/assets/img/fav.png",
 	"/assets/img/fav.svg",
+	"/assets/img/fav.png?v=12",
+	"/assets/img/fav.svg?v=12",
 ];
 
 /** URLs the shell strategy must never touch. */

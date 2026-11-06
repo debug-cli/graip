@@ -76,7 +76,7 @@ test("homepage splashes load from the colocated plain-text list", () => {
   assert.ok(loader.includes("noopener noreferrer"));
   assert.doesNotMatch(loader, /\.innerHTML\s*=/);
   assert.ok(phrases.includes("free snacks at level 10"));
-  assert.ok(phrases.includes("Also try [VAPOR!](https://vapor.my/)"));
+  assert.ok(phrases.includes("Also try [](https://vapor.my/)"));
   assert.ok(worker.includes('"/assets/splashes/splash.js"'));
   assert.ok(worker.includes('"/assets/splashes/splashes.txt"'));
 });
@@ -299,9 +299,16 @@ test("the release version is 2.1.0 \"juice\" everywhere it is written", () => {
     "Research archive",
     "Dated releases",
     "Homepage branding",
+    "Graip favicon (PR #10)",
+    "Browser-tab favicon (PR #11)",
   ]) {
     assert.ok(changelog.includes(`**${label}:**`), `README changelog missing ${label}`);
     assert.ok(updates.includes(`<b>${label}</b>`), `Settings Updates missing ${label}`);
+  }
+  for (const number of [10, 11]) {
+    const url = `https://github.com/debug-cli/graip/pull/${number}`;
+    assert.ok(changelog.includes(url), `README changelog does not link PR #${number}`);
+    assert.ok(updates.includes(url), `Settings Updates does not link PR #${number}`);
   }
   assert.ok(updates.includes("C2-associated Lunaron"), "Settings Updates includes the Wisp-source exclusion note");
 
@@ -330,14 +337,27 @@ test("the release version is 2.1.0 \"juice\" everywhere it is written", () => {
   const agents = read("AGENTS.md");
   assert.match(agents, /Every README release heading must include the date/);
   assert.match(agents, /Mirror each dated README release entry in the native Settings → Updates panel/);
+  assert.match(agents, /Browser tabs use the cache-busted PNG URL/);
   assert.match(home, /https:\/\/fonts\.googleapis\.com\/css2\?family=Space\+Mono:wght@400;700&amp;display=swap/);
   assert.match(home, /<h1 class="text-7xl font-medium home-gradient home-title">/);
   assert.match(read("styles/index.css"), /#homeContent \.home-title\s*\{\s*font-family:\s*"Space Mono",\s*monospace;\s*\}/);
 
-  const newtab = read("newtab.html");
-  for (const page of [home, newtab]) {
-    assert.match(page, /<link rel="icon" type="image\/svg\+xml" href="\/assets\/img\/fav\.svg">/);
-    assert.match(page, /<link rel="icon" type="image\/png" href="\/assets\/img\/fav\.png">/);
+  const faviconPages = ["index.html", "404.html", "newtab.html", "panic.html"].concat(
+    fs.readdirSync(path.join(ROOT, "pages"))
+      .filter((file) => file.endsWith(".html") && file !== "classroom.html")
+      .filter((file) => /<link[^>]+href="\/assets\/img\/fav\.png/.test(read(`pages/${file}`)))
+      .map((file) => `pages/${file}`)
+  );
+  for (const page of faviconPages) {
+    const source = read(page);
+    assert.match(source, /<link rel="icon" href="\/assets\/img\/fav\.png\?v=12"(?: id="tabIcon")?>/,
+      `${page} must use the cache-busted Graip browser-tab icon`);
+    assert.doesNotMatch(source, /<link[^>]+type="image\/svg\+xml"[^>]+fav\.png/,
+      `${page} must not label the PNG favicon as SVG`);
+  }
+  for (const page of ["index.html", "newtab.html", "404.html", "panic.html"]) {
+    assert.match(read(page), /<link rel="icon" href="\/assets\/img\/fav\.png\?v=12" id="tabIcon">/,
+      `${page} must expose the mutable tabIcon link`);
   }
   const iconPng = fs.readFileSync(path.join(ROOT, "assets/img/fav.png"));
   assert.equal(iconPng.readUInt32BE(16), 160, "the app icon PNG is 160px wide");
@@ -363,9 +383,11 @@ test("the release version is 2.1.0 \"juice\" everywhere it is written", () => {
 
   // the shell cache name carries the release so a new build retires the old one
   const worker = read("sw.js");
-  assert.match(worker, /const SHELL_CACHE = "graip-shell-v11";/);
+  assert.match(worker, /const SHELL_CACHE = "graip-shell-v12";/);
   assert.match(worker, /"\/assets\/img\/fav\.png"/);
   assert.match(worker, /"\/assets\/img\/fav\.svg"/);
+  assert.match(worker, /"\/assets\/img\/fav\.png\?v=12"/);
+  assert.match(worker, /"\/assets\/img\/fav\.svg\?v=12"/);
 });
 
 test("special thanks lists the README credits and settings categories can scroll", () => {
