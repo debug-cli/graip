@@ -101,7 +101,7 @@ test("manifest_is_valid_and_installable", () => {
   assert.ok(Array.isArray(manifest.icons) && manifest.icons.length > 0);
   for (const icon of manifest.icons) {
     assert.ok(
-      fs.existsSync(path.join(ROOT, icon.src.replace(/^\//, ""))),
+      fs.existsSync(path.join(ROOT, icon.src.split(/[?#]/, 1)[0].replace(/^\//, ""))),
       `manifest icon ${icon.src} does not exist`
     );
   }

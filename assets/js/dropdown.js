@@ -40,7 +40,7 @@ const storeOptions = storeSelector.querySelector(".store-options");
 const decoyProfiles =
   typeof GraipCloak !== "undefined" && GraipCloak.PROFILES
     ? GraipCloak.PROFILES
-    : { None: { title: "graip", icon: "/assets/img/fav.png", page: "none" } };
+    : { None: { title: "graip", icon: "/assets/img/fav.png?v=12", page: "none" } };
 
 const decoyPresets = {};
 for (const [name, preset] of Object.entries(decoyProfiles)) {
@@ -346,7 +346,7 @@ function applyDecoy(s) {
 
   if (s === "None" || !selected) {
     document.title = "graip";
-    if (favicon) favicon.href = "/assets/img/fav.png";
+    if (favicon) favicon.href = "/assets/img/fav.png?v=12";
     return;
   }
 

@@ -470,6 +470,8 @@ Guidelines, architecture notes and known traps are in [`AGENTS.md`](./AGENTS.md)
 - **Research archive:** preserve the supplied technical data in [`docs/research/public-wisp-servers-technical-data.md`](docs/research/public-wisp-servers-technical-data.md), with its limitations documented in `AGENTS.md`.
 - **Dated releases:** add introduction dates for v2.0.0 and v2.1.0, document complete release notes and version-prefixed PR titles in `AGENTS.md`.
 - **Homepage branding:** use Space Mono from Google Fonts for the homepage title, with a monospace fallback.
+- **Graip favicon (PR #10):** replace the Cherri icon with transparent pixel-art PNG and vector SVG versions of the new Graip app icon, and advance the shell cache to v11 ([PR #10](https://github.com/debug-cli/graip/pull/10)).
+- **Browser-tab favicon (PR #11):** use the cache-busted PNG in Graip page tabs, refresh saved/reset cloak icons, version the manifest icons, and advance the offline shell cache to v12 ([PR #11](https://github.com/debug-cli/graip/pull/11)).
 
 ### v2.0.0 "juice" — introduced 2026-10-26
 

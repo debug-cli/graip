@@ -24,8 +24,19 @@ const tabTitle = document.querySelector('title');
 const themeLink = document.getElementById('css-theme-link');
 const savedTheme = localStorage.getItem('graip_theme') ?? 'midnight';
 
+function freshenGraipFavicon(href) {
+    if (!href) return href;
+    try {
+        const url = new URL(href, window.location.href);
+        if (url.origin === window.location.origin && /^\/assets\/img\/fav\.(png|svg)$/.test(url.pathname)) {
+            return "/assets/img/fav.png?v=12";
+        }
+    } catch (error) { /* leave non-URL cloak icons untouched */ }
+    return href;
+}
+
 if ((savedCloakIcon || savedCloakTitle) && tabIcon) {
-    tabIcon.href = savedCloakIcon || tabIcon.href;
+    tabIcon.href = freshenGraipFavicon(savedCloakIcon) || tabIcon.href;
     document.title = savedCloakTitle || document.title;
 }
 
@@ -208,7 +219,7 @@ function cloakMe(o) {
             localStorage.setItem("graip_cloakTitle", document.title);
             break;
         case "none":
-            tabIcon.href = "/assets/img/fav.png";
+            tabIcon.href = "/assets/img/fav.png?v=12";
             document.title = "graip";
             localStorage.setItem("graip_cloakIcon", tabIcon.href);
             localStorage.setItem("graip_cloakTitle", document.title);

@@ -41,7 +41,7 @@
   const PROFILES = {
     None: {
       title: "graip",
-      icon: "/assets/img/fav.png",
+      icon: "/assets/img/fav.png?v=12",
       page: "none",
     },
     Google: {
@@ -221,7 +221,7 @@
     if (key === "None") {
       global.document.title = BASE_TITLE;
       const icon = faviconElement();
-      if (icon) icon.href = "/assets/img/fav.png";
+      if (icon) icon.href = "/assets/img/fav.png?v=12";
       write(KEYS.cloakTitle, "");
       write(KEYS.cloakIcon, "");
       log("debug", "cloak cleared");
